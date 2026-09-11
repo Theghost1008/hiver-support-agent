@@ -24,3 +24,14 @@ A running list of non-obvious decisions made during this project, and the reason
 - Chose AppleSupport as the balance: solid volume (enough for a meaningful retrieval index and golden set), a coherent tech/device support domain, and personal familiarity that helps with manual labeling quality.
 
 ---
+
+### 3. Grounding scope decision
+**Decision:** Defined "grounded reply" as mimicking AppleSupport's real *public-facing* response pattern for a given intent (including appropriately redirecting to DM when that matches historical behavior) — not fabricating a deep technical resolution we have no evidence for.
+
+**Reasoning:**
+- Manual inspection of (customer message → Apple reply) pairs showed that most real Apple replies redirect to DM ("let's go to DM", "we've received your DM") rather than publicly resolving the issue — actual fixes happen in private DMs, which aren't in this dataset.
+- Treating public triage replies as if they were full resolutions would misrepresent what the data actually supports.
+- This is a deliberate, stated scope boundary — documented explicitly in the report's problem-framing section — not an oversight discovered later.
+- Flagged as a likely source of a misleading headline metric: high textual similarity to retrieved historical replies could look strong while mostly reflecting a generic "let's DM" template, not genuine reply quality.
+
+---
