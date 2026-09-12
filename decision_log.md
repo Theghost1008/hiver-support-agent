@@ -77,3 +77,21 @@ finding a payment-info request that didn't fit any existing bucket. Expanded
 
 ---
 
+### 6. Reasoning-model token budget and SDK version fix
+**Decision:** Set max_tokens=300 (up from an initial 20) and reasoning_effort="low"
+on all classification calls to gpt-oss-120b. Upgraded the groq SDK from 0.11.0 to
+support the reasoning_effort parameter.
+
+**Reasoning:**
+- gpt-oss-120b is a reasoning model that spends completion tokens on internal
+  chain-of-thought before emitting a final answer. With max_tokens=20, all tokens
+  were consumed by reasoning, causing content to silently return as an empty
+  string ("") rather than an error — masked by our own defensive fallback logic.
+- reasoning_effort="low" chosen deliberately, not just to fix the bug: intent
+  classification into a small known label set doesn't benefit from deep multi-step
+  reasoning, so low effort is both correct for the task and reduces cost/latency.
+- The reasoning_effort parameter required upgrading the groq SDK, since 0.11.0
+  predated support for gpt-oss reasoning controls.
+
+---
+
