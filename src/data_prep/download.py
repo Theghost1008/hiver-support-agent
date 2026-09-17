@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 RAW_DIR = 'data/raw'
-SUBSAMPLE_SIZE = 200_000
+SUBSAMPLE_SIZE = 500_000
 
 # def download_dataset():
 #     os.makedirs(RAW_DIR,exist_ok=True)

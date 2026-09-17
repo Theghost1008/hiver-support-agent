@@ -155,3 +155,23 @@ improvement over both, not merely edging past a weak floor.
 
 ---
 
+### 10. Pair completeness is a structural data property, not a subsampling artifact
+**Initial hypothesis:** ~18-20% of customer messages lack a matched Apple reply
+due to row-order truncation from sequential subsampling (first N rows only).
+
+**Test:** Increased subsample from 200k to 500k rows (2.5x). If truncation were
+the cause, pair-completeness should measurably improve.
+
+**Result:** Completeness stayed essentially flat — 81.6% (4,386/5,372) at 200k
+rows vs. 80.3% (12,616/15,705) at 500k rows. Hypothesis rejected.
+
+**Revised conclusion:** The ~20% of customer messages without a paired Apple
+reply likely reflects real structural properties of the dataset — messages that
+genuinely went unanswered publicly, or reply-chain links pointing to other
+customer tweets rather than a brand reply — not a subsampling boundary effect.
+Accepted 12,616 pairs as the retrieval base going forward; further increasing
+subsample size is not expected to meaningfully change this ratio, so not pursued
+further.
+
+---
+
