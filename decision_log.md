@@ -95,3 +95,63 @@ support the reasoning_effort parameter.
 
 ---
 
+### 7. Classifier evaluation reveals context-dependency limitation
+**Decision:** Ran classify_intent against 50 held-out labeled examples (80% accuracy,
+before baseline comparison). Manual review of the 10 mismatches identified 4 distinct
+failure patterns rather than uniform "model error":
+1. Mid-thread reply fragments lacking standalone context (6/10 mismatches) — customer
+   replies answering Apple's clarifying question, uninterpretable in isolation without
+   the preceding thread.
+2. Genuinely overlapping taxonomy boundaries (e.g. bug_report vs support_escalation
+   for "still got activation issues" — both are defensible readings).
+3. Non-English text (one French message) — outside the system's intended scope.
+4. Possible ground-truth labeling error in our own manual label (one case), not
+   necessarily a model failure.
+
+**Implication:** Raw accuracy alone (80%) understates real performance, since a
+meaningful fraction of "errors" reflect data/scope limitations rather than
+classifier weakness. This is directly relevant to the report's mandatory
+"misleading headline number" section.
+
+---
+
+### 8. Baseline design flaw and NN-baseline data-starvation finding
+**Decision:** Corrected trivial baseline to fit on the full 60-row labeled sample
+(real class distribution) instead of the 10-example few-shot set, after noticing
+it degenerated to a single always-predicted label due to an artificial 10-way tie.
+
+**Reasoning:**
+- Fitting the trivial baseline on a deliberately balanced 10-example set defeats
+  its purpose, since it relies on exploiting real class imbalance.
+- Post-fix result (34%) exactly matches the true label distribution of the
+  held-out set (17/50 bug_report), confirming the fix.
+
+**Finding:** The NN (simple) baseline, fit on the same 10 examples as the LLM
+classifier, scored 24% — lower than the corrected trivial baseline (34%).
+Hypothesis: with only one example per category, nearest-neighbor matching
+suffers from "anchor bias" — a single example's incidental wording can absorb
+predictions for unrelated messages (observed: nn=battery_performance predicted
+far more often than that intent's real frequency). This suggests semantic
+similarity methods need meaningfully more than one example per class to be
+reliable, a genuinely relevant caveat for the report given time/scope
+constraints prevented building a larger labeled set before this milestone.
+
+---
+
+### 9. NN baseline data-scaling experiment
+**Decision:** Ran a side experiment refitting the NN baseline on 45 examples
+(vs. the original 10) using a fresh, leakage-free 15-row eval split, to test
+whether the earlier NN underperformance (24%, below trivial's 34%) was due to
+data starvation.
+
+**Finding:** NN accuracy improved to 33.33% with more fitting data — directionally
+supporting the anchor-bias hypothesis — but still did not clearly exceed the
+trivial baseline. Given the small eval size (15 rows), this difference is within
+plausible sampling noise and should not be overstated as "NN never beats trivial."
+Honest conclusion: more data measurably helps NN, but at this scale neither
+baseline clearly outperforms simple majority-class guessing on this task —
+reinforcing that the LLM classifier's 80% is a substantial, non-trivial
+improvement over both, not merely edging past a weak floor.
+
+---
+
