@@ -25,3 +25,6 @@ def save_index(index:dict, path: Path):
 
 if __name__ == "__main__":
     pairs_df = pd.read_csv(PROJECT_ROOT/"data"/"processed"/"apple_pairs.csv")
+    index = build_retrieval_index(pairs_df)
+    save_index(index,PROJECT_ROOT/"data"/"processed"/"retrieval_index.npz")
+    print(f"Index built and saved: {len(index['customer_texts'])} historical pairs")

@@ -175,3 +175,24 @@ further.
 
 ---
 
+### 11. Retriever indexing bug caught via similarity-score sanity check
+**Bug:** retrieve_similar's returned "similarity" field was hardcoded to
+similarities[1] instead of similarities[i], causing every result in the
+top-k list to report the same (wrong) similarity score, while the retrieved
+texts themselves were correctly indexed and looked plausible.
+
+**How it was caught:** noticed all three results reported an identical
+similarity (0.155018) to 6 decimal places — statistically implausible for
+distinct 384-dim embeddings. Confirmed via debug inspection of the raw
+similarities array (12,616 unique values, ruling out embedding duplication)
+before finding the indexing typo.
+
+**Why this matters:** the bug produced plausible-looking output (topically
+correct retrieved messages) that could easily have passed a casual glance.
+Fixed scores (0.67, 0.64, 0.61) are meaningfully higher and more
+differentiated than the buggy 0.155 — this also resolves the earlier
+open question about whether ~0.15 was a "normal" similarity ceiling for
+this embedding model on this data; it was not, it was a bug artifact.
+
+---
+
