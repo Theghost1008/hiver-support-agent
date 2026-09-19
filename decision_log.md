@@ -215,3 +215,25 @@ consistent findings already in hand.
 
 ---
 
+### 13. Reply generator hallucinated a placeholder URL — fixed via prompt + example sanitization
+**Bug found:** First real generated reply included a fabricated link
+(https://t.co/YourSupportLink) — the model pattern-matched the structure of
+real historical Apple replies (which legitimately contain real support links)
+without having an actual URL to substitute, inventing a plausible-looking fake.
+
+**Fix:** (1) Strip URLs from historical examples before they enter the prompt,
+via strip_urls(), so the model isn't shown "replies of this type include a
+link" as a pattern to imitate. (2) Explicit prompt instruction forbidding
+fabricated links.
+
+**Confirmed fixed:** Rerun on the same test message produced "please continue
+the conversation with us in DM" with no link, real or fabricated.
+
+**Related, lower-severity, not yet fixed:** generated reply used generic "@user"
+rather than a specific customer handle, since our test call didn't pass a real
+username through. Not a hallucination risk (no invented identity), just a
+placeholder gap — noted as a limitation for now, would need actual pipeline
+wiring to carry the real @handle through.
+
+---
+

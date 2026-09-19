@@ -1,4 +1,5 @@
 import os
+import re
 from groq import Groq
 from dotenv import load_dotenv
 from src.retrieval.retriever import retrieve_similar
@@ -10,11 +11,14 @@ MODEL = "openai/gpt-oss-120b"
 
 SIMILARITY_THRESHOLD = 0.5
 
+def strip_urls(texts: str)->str:
+    return re.sub(r'https?://\S+', '',texts).strip()
+
 def build_reply_prompt(message: str, grounded_examples: list[dict])->str:
     if grounded_examples:
         example_block = "\n\n".join(
             f'Customer: "{ex["historical_customer_texts"]}"\n'
-            f'Apple\'s actual reply: "{ex["historical_apple_reply"]}"'
+            f'Apple\'s actual reply: "{strip_urls(ex["historical_apple_reply"])}"'
             for ex in grounded_examples
         )
         grounding_instructions = (
@@ -22,6 +26,11 @@ def build_reply_prompt(message: str, grounded_examples: list[dict])->str:
             f"issues in the past: \n\n{example_block}"
             f"Draft a reply to the new message below, in a similar tone and "
             f"style to these real examples."
+        )
+        grounding_instructions += (   # <-- new line, right after the block above
+            "\n\nDo NOT include any links or URLs in your reply, since you do "
+            "not have a real one to provide. If the historical examples "
+            "mention DM, just say to continue over DM without including a link."
         )
     else:
         grounding_instructions=(
@@ -63,4 +72,3 @@ if __name__=="__main__":
     print(f"Grounded on {result['num_grounded_examples']} historical examples"
           f"(similarities: {result['grounding_similarities']})")
     print(f"Generated reply: {result['reply']}")
-    
