@@ -237,3 +237,32 @@ wiring to carry the real @handle through.
 
 ---
 
+### 14. Rule-based escalation policy with layered signals
+**Decision:** Built escalation as a deterministic, priority-ordered rule set
+rather than an additional LLM call.
+
+**Reasoning:** Escalation is the pipeline's key safety-relevant control point —
+getting it wrong has real consequences (an issue that should reach a human,
+silently auto-handled). Deterministic, fully auditable rules were prioritized
+over an LLM's flexible-but-self-reported reasoning, given our own direct
+experience with the reply generator hallucinating (entry #13) — an LLM's stated
+"reason" is not automatically trustworthy just because it reads plausibly.
+
+Rules (checked in priority order, first match wins):
+1. Always-escalate intents: account_security, billing_payment, other_unclear,
+   support_escalation — sensitive categories or ones where the classifier
+   itself lacked confidence.
+2. Non-English text (via langdetect) — system and taxonomy are English-scoped.
+3. Very short messages (<5 words) — directly evidenced failure mode from
+   classifier evaluation (most real mismatches were short, context-lacking
+   thread fragments).
+4. Zero grounded retrieval examples — no historical precedent to draw from.
+5. Weak average grounding similarity (<0.55, just above the 0.5 inclusion
+   cutoff) — a barely-qualifying match is weaker evidence than a strong one.
+
+**Explicitly deferred (noted as future work):** sentiment/frustration keyword
+detection and classifier confidence scoring — both plausible signals, neither
+currently validated with real evidence, avoided to prevent speculative
+overengineering.
+
+---
