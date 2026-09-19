@@ -266,3 +266,84 @@ currently validated with real evidence, avoided to prevent speculative
 overengineering.
 
 ---
+
+### 15. Progress bar disconnected from actual work loop — real progress was hidden, not lost
+**Bug found:** classify_presample.py created a tqdm progress_bar object, but the
+for loop iterated over a separately-constructed enumerate(presaample.iterrows())
+instead of progress_bar itself. The bar displayed once and never updated,
+appearing to hang indefinitely, while the actual classification loop underneath
+ran correctly and silently in the background.
+
+**How discovered:** compared file modification timestamps and checkpoint content
+before assuming a real hang; found 200 rows had genuinely been classified during
+the apparent "stuck" period. No progress was actually lost.
+
+**Fix:** for loop now iterates directly over progress_bar (which wraps the same
+enumerate(...iterrows())), so the display and the actual work loop are the same
+iterator, not two independent ones.
+
+**Lesson:** a frozen progress indicator is not proof the underlying work stopped
+— worth checking independent evidence (file timestamps, checkpoint contents)
+before assuming a hang and killing a process that may be working correctly.
+
+---
+
+### 16. Groq daily token rate limit hit during golden-set pre-sample classification
+**What happened:** Classification run crashed at row 961/1500 after hitting Groq's
+free-tier daily token cap (200,000 TPD), not the per-minute limit already
+accounted for. Checkpoint system preserved progress up to the last clean save
+(~row 950), consistent with the resumable design working as intended even
+under an unplanned failure mode.
+
+**Fix:** Added retry logic with a 100s wait on RateLimitError inside
+classify_intent, since Groq's error response suggested a short, rolling-window
+wait (not a fixed once-daily reset) would likely resolve transient limit hits.
+
+**Honest limitation:** if the daily cap is genuinely exhausted (not just a
+momentary spike), retrying won't help within the same session — the run may
+need to pause and resume on a new day. This is a real, disclosed cost of
+choosing a free-tier LLM API (decision log entry #1) rather than a paid one;
+worth stating explicitly rather than hidden as a smooth, uninterrupted process.
+
+---
+
+### 17. Checkpoint file corruption from concurrent process writes
+**What happened:** Running two separate instances of classify_presample.py
+simultaneously (different API keys/accounts) against the same checkpoint
+file caused a race condition — concurrent, uncoordinated writes corrupted
+presample_with_predictions.csv, producing more rows than the intended 1500
+and unreliable data.
+
+**Resolution:** Discarded the corrupted checkpoint entirely and restarted
+classification from scratch with a single process/key, rather than attempt
+to salvage or deduplicate an unreliable file. Chose not to trust partially
+corrupted data for a "golden" evaluation artifact where data integrity is
+the entire point.
+
+**Related:** the second account/key that caused this was created against
+project guidance (likely violates Groq's ToS) and has since been deleted;
+not used in the final submission.
+
+---
+
+### 18. Redesigned bulk classification from per-message to batched API calls
+**Problem:** Original one-API-call-per-message approach (1,500 calls) repeatedly
+hit Groq's per-minute and daily rate limits during golden-set pre-sample
+classification, causing crashes and, separately, tempting a rate-limit
+workaround (a second account) that was correctly abandoned as against
+provider ToS and inconsistent with the assignment's honesty requirements.
+
+**Fix:** Redesigned as classify_intent_batch — groups messages into batches
+of 15, sending one API call per batch with a JSON array response, rather
+than one call per message. Reduces 1,500 calls to 100, cutting both total
+runtime (~50min -> ~5min) and rate-limit exposure substantially, since fixed
+prompt overhead (taxonomy + few-shot examples) is now paid once per batch
+instead of once per message.
+
+**Kept both single-message (classify_intent) and batched (classify_intent_batch)
+functions:** the pipeline's live classification path handles one real-time
+message at a time and cannot be batched; batching only applies to this
+one-off bulk data-preparation task.
+
+---
+
