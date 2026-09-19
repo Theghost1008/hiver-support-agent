@@ -196,3 +196,22 @@ this embedding model on this data; it was not, it was a bug artifact.
 
 ---
 
+### 12. Retrieval similarity calibration and its limits
+**Finding:** Genuine semantic matches score 0.67-0.76 top similarity; two attempted
+negative controls (off-topic queries) unexpectedly scored 0.41-0.44 due to
+coincidental surface word overlap in the large (12,616-message), short, informal
+tweet corpus (e.g. "pizza" appearing literally in an unrelated real complaint).
+
+**Implication:** Pure embedding similarity cannot cleanly separate "genuinely
+relevant" from "coincidentally overlapping" at this corpus scale and text style.
+A single similarity threshold is an imperfect confidence signal on its own.
+
+**Decision:** The escalation policy will not rely on retrieval similarity alone
+as a confidence signal. Will combine it with intent-classifier agreement (does
+the top retrieved match's original intent align with the new message's predicted
+intent?) rather than trusting a bare similarity number in isolation. Chasing a
+perfectly clean negative-control score was abandoned as low-value given two
+consistent findings already in hand.
+
+---
+
