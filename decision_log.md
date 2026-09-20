@@ -347,3 +347,23 @@ one-off bulk data-preparation task.
 
 ---
 
+### 19. Golden sample built: 150 stratified + 25 random (175 total)
+**Decision:** Final golden evaluation sample combines 150 stratified rows
+(15 per intent category, drawn from a classifier-predicted 1,500-row
+pre-sample) with 25 pure-random rows (drawn from the full 12,616-pair pool,
+excluding anything already used in stratification or few-shot examples).
+
+**Result:** All 10 categories achieved the full 15 examples with no shortfall
+— including icloud_sync and billing_payment, which had only 1 example each
+in the original 60-row taxonomy-building sample. Confirms that earlier
+sparsity was a small-sample artifact, not a reflection of true rarity in
+the full dataset.
+
+**Caveat retained from earlier:** stratification was by classifier-predicted
+intent, not verified ground truth, since hand-labeling the full pool wasn't
+feasible. Manual labeling of this 175-row golden set (next step) will
+produce the true ground-truth labels and may reveal some stratification
+groups were built around misclassified examples.
+
+---
+
