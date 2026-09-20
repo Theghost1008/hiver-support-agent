@@ -452,3 +452,24 @@ reply was scoped to provide.
 
 **Decision:** Report both numbers together in the final report, not just the
 strict PASS rate alone, with this breakdown of contributing causes.
+
+---
+
+### 25. Judge-human agreement validation
+**Result (30-row blind sample, human labeled independently before seeing
+LLM judge verdicts):**
+- Raw percent agreement: 93.33% (28/30)
+- Cohen's kappa: 0.474 (moderate agreement, per Landis & Koch scale)
+
+**Interpretation:** Raw agreement alone is inflated by severe class imbalance
+(both human and LLM verdicts are ~90%+ FAIL) — a trivial always-FAIL judge
+would score similarly high on raw agreement without evaluating anything.
+Kappa, which corrects for this, indicates genuine but moderate (not excellent)
+agreement.
+
+**Both disagreements were human=PASS, LLM=FAIL (not randomly distributed),
+both on short, low-stakes messages with minimal criteria** — suggesting a
+possible mild systematic bias toward over-strictness in the LLM judge on
+simple/low-bar cases, rather than random judge unreliability. Documented as
+a real, disclosed limitation of the judge rather than treated as a solved
+validation.
