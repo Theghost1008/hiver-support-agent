@@ -367,3 +367,51 @@ groups were built around misclassified examples.
 
 ---
 
+### 20. Discovered taxonomy gap during golden-set labeling: order/shipping
+**Finding:** 2 of 175 golden-set messages concerned order/shipping status
+(e.g. pre-order delivery), not cleanly fitting any of the 10 existing intent
+categories. Closest existing label (billing_payment) used as a pragmatic
+fit for evaluation purposes.
+
+**Decision:** Not added as an 11th official category — 2 examples out of 175
+is too thin to justify redefining the taxonomy and invalidating prior
+classification results built around the 10-category version. Documented
+as a known scope gap; a production system would likely need this as
+a real 11th category given more data.
+
+---
+
+### 21. Final intent classification accuracy on full golden set
+**Result:** 71.43% (125/175) — classify_intent (real single-message production
+function) vs. independently hand-labeled true_intent, across the full golden
+set (150 stratified + 25 random).
+
+**Context:** An earlier 50-row held-out check (before the golden set existed)
+showed 80%. The larger, properly-labeled 175-row result (71.43%) is the more
+trustworthy figure: bigger sample, independently-labeled ground truth (not
+influenced by model predictions), and evaluated using the exact function used
+in production (not the batch variant used for pre-sampling). This discrepancy
+is itself a useful, honest illustration for the report's mandatory "misleading
+headline number" section — smaller samples can overstate or understate true
+performance by chance.
+
+---
+
+### 22. Final authoritative three-way intent classification comparison
+**Result (full 175-row golden set, real classify_intent, independently
+hand-labeled true_intent):**
+- Trivial baseline: 17.14% (30/175 — matches true frequency of the most
+  common category, bug_report, confirming correct baseline behavior)
+- NN baseline: 21.71%
+- LLM classifier (main system): 71.43%
+
+**This supersedes all earlier, smaller-sample accuracy figures** (the 50-row
+80% check, and the earlier 34%/24% baseline comparison on a different partial
+set) as the authoritative number for the report, since it uses the full golden
+set, independently-labeled ground truth, and the actual production classification
+function rather than the batch variant used only for sampling convenience.
+
+**Caveat:** trivial baseline's "most common label" was determined from the
+golden set's own 175-row true_intent distribution, used as a proxy for the
+full 12,616-pair pool's true distribution (which we don't have fully labeled).
+A reasonable estimate, not a guaranteed exact population statistic.

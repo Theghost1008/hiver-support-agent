@@ -27,7 +27,7 @@ def build_reply_prompt(message: str, grounded_examples: list[dict])->str:
             f"Draft a reply to the new message below, in a similar tone and "
             f"style to these real examples."
         )
-        grounding_instructions += (   # <-- new line, right after the block above
+        grounding_instructions += ( 
             "\n\nDo NOT include any links or URLs in your reply, since you do "
             "not have a real one to provide. If the historical examples "
             "mention DM, just say to continue over DM without including a link."
