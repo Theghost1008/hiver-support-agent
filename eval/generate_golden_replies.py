@@ -7,7 +7,8 @@ from src.retrieval.retriever import load_index
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 GOLDEN_PATH = PROJECT_ROOT / "data" / "golden_eval_with_real_predictions.csv"
-CHECKPOINT_PATH = PROJECT_ROOT / "data" / "golden_eval_with_replies.csv"
+# CHECKPOINT_PATH = PROJECT_ROOT / "data" / "golden_eval_with_replies.csv"
+CHECKPOINT_PATH = PROJECT_ROOT / "data" / "golden_eval_with_replies_v2.csv"
 
 def generate_golden_replies():
     if CHECKPOINT_PATH.exists():

@@ -15,7 +15,7 @@ SIMILARITY_THRESHOLD = 0.5
 def strip_urls(texts: str)->str:
     return re.sub(r'https?://\S+', '',texts).strip()
 
-def build_reply_prompt(message: str, grounded_examples: list[dict])->str:
+def build_reply_prompt(message: str, grounded_examples: list[dict]) -> str:
     if grounded_examples:
         example_block = "\n\n".join(
             f'Customer: "{ex["historical_customer_texts"]}"\n'
@@ -26,24 +26,32 @@ def build_reply_prompt(message: str, grounded_examples: list[dict])->str:
             f"Here are real examples of how AppleSupport had handled similar "
             f"issues in the past: \n\n{example_block}"
             f"Draft a reply to the new message below, in a similar tone and "
-            f"style to these real examples."
+            f"style to these real examples. If any of these real examples "
+            f"mention a specific team or department (e.g. 'iTunes Store team', "
+            f"'Online Store team'), reuse that same real reference if it fits "
+            f"the new message's issue type - do not invent a team name that "
+            f"doesn't appear in the examples."
         )
-        grounding_instructions += ( 
+        grounding_instructions += (
             "\n\nDo NOT include any links or URLs in your reply, since you do "
             "not have a real one to provide. If the historical examples "
             "mention DM, just say to continue over DM without including a link."
         )
     else:
-        grounding_instructions=(
-            "No closely similar histoical examples were found. Draft a "
+        grounding_instructions = (
+            "No closely similar historical examples were found. Draft a "
             "reasonable, brief, professional support reply in AppleSupport's "
             "typical style: acknowledge the issue, and if it requires "
-            "account-specific troubleshooting, offer to continue over DM"
+            "account-specific troubleshooting, offer to continue over DM."
         )
     return f"""You are drafting a public Twitter reply as AppleSupport 
-    {grounding_instructions}
-    New customer message: {message}
-    Write ONLY the reply text, nothing else. Keep it brief, consistent with a real Twitter support reply(typicall under 200 characters)."""
+        {grounding_instructions}
+        New customer message: {message}
+        Address every distinct concern raised in the customer's message, not
+        just the first one - if they mention multiple issues or ask multiple
+        questions, your reply should acknowledge all of them.
+        Write ONLY the reply text, nothing else. Keep it consistent with a
+        real Twitter support reply, typically under 280 characters."""
 
 def generate_reply(message: str,index:dict)->dict:
     retrieved = retrieve_similar(message,index,top_k=3)

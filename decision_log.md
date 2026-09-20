@@ -473,3 +473,30 @@ possible mild systematic bias toward over-strictness in the LLM judge on
 simple/low-bar cases, rather than random judge unreliability. Documented as
 a real, disclosed limitation of the judge rather than treated as a solved
 validation.
+
+---
+
+### 26. Reply prompt improvements: validated result on full golden set
+**Changes made to build_reply_prompt:** (1) loosened length constraint from
+~200 to 280 characters (actual Twitter limit), giving room to address more
+criteria per reply; (2) explicit instruction to address every distinct
+concern in the customer's message, not just the first; (3) explicit
+instruction to reuse real named teams/departments when present in retrieved
+grounding examples, while still prohibiting invented specifics not present
+in the examples (keeping the earlier anti-hallucination fix intact).
+
+**Result (full 175-row golden set, before vs after):**
+- Strict PASS rate: 8.00% -> 14.29% (+6.3pp, ~1.8x)
+- Partial credit: 37.76% -> 47.02% (+9.3pp)
+
+**Validation process:** tested on a 20-row sample first (showed a smaller,
+inconclusive-at-that-scale signal: partial credit +5pp, PASS rate unchanged
+at 0% both times, within expected sampling noise given the low base rate).
+Full 175-row rerun confirmed genuine, larger improvement, justifying the
+additional API cost of a complete rerun. Old and new results both retained
+on disk (golden_eval_with_judge.csv vs _v2.csv) for full traceability.
+
+**Still a real, disclosed limitation:** even the improved 14.29% strict PASS
+rate remains low in absolute terms. The largest identified remaining cause
+(lost conversational thread context) was not addressed - noted as the
+primary "what I'd do with one more week" item.

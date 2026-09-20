@@ -5,8 +5,10 @@ import time
 from eval.llm_judge import judge_reply
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-GOLDEN_PATH = PROJECT_ROOT / "data" / "golden_eval_with_replies.csv"
-CHECKPOINT_PATH = PROJECT_ROOT / "data" / "golden_eval_with_judge.csv"
+# GOLDEN_PATH = PROJECT_ROOT / "data" / "golden_eval_with_replies.csv"
+# CHECKPOINT_PATH = PROJECT_ROOT / "data" / "golden_eval_with_judge.csv"
+GOLDEN_PATH = PROJECT_ROOT / "data" / "golden_eval_with_replies_v2.csv"
+CHECKPOINT_PATH = PROJECT_ROOT / "data" / "golden_eval_with_judge_v2.csv"
 
 def run_judge():
     if CHECKPOINT_PATH.exists():
