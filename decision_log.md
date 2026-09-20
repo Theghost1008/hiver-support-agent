@@ -415,3 +415,40 @@ function rather than the batch variant used only for sampling convenience.
 golden set's own 175-row true_intent distribution, used as a proxy for the
 full 12,616-pair pool's true distribution (which we don't have fully labeled).
 A reasonable estimate, not a guaranteed exact population statistic.
+
+---
+
+### 23. Automated reply-quality metrics: final result, full golden set
+**Result (175/175 replies):**
+- Empty replies: 0%
+- Replies containing a fabricated/real link: 0% (confirms the entry #13
+  fix holds at full scale, not just the single test case originally checked)
+- Replies over 280 characters: 0%
+- Average reply length: 117 characters
+- Average grounded examples per reply: 2.98/3 (zero rows with no grounding)
+
+**Note:** an earlier full run produced 100% empty replies due to a
+transient, unreproduced issue (possibly provider-side); resolved on
+rerun with no code changes needed, confirmed by direct re-verification
+rather than assumption.
+
+---
+
+### 24. LLM judge results: strict vs. partial-credit reveals a misleading headline risk
+**Result:** Strict all-or-nothing PASS rate: 8.00% (14/175). Average partial
+credit (criteria met / criteria total): 37.76%.
+
+**Interpretation:** The large gap between these two numbers is itself a key
+finding. Reporting only the strict 8% PASS rate would be a misleading headline
+number — it obscures that replies typically satisfy a third or more of their
+required criteria, rather than failing completely. Manual review of failure
+reasons (decision log entry preceding this) identified three contributing
+causes: (1) replies address only one criterion element rather than combining
+multiple asks, (2) lost conversational context from single-message-only input
+(directly connects to the classifier's earlier context-fragment failure mode,
+entry #7), (3) some criteria expect specifics (named internal teams, full
+multi-step instructions) exceeding what a single public triage-style tweet
+reply was scoped to provide.
+
+**Decision:** Report both numbers together in the final report, not just the
+strict PASS rate alone, with this breakdown of contributing causes.

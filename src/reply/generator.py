@@ -1,5 +1,6 @@
 import os
 import re
+import pandas as pd
 from groq import Groq
 from dotenv import load_dotenv
 from src.retrieval.retriever import retrieve_similar
@@ -56,6 +57,8 @@ def generate_reply(message: str,index:dict)->dict:
         reasoning_effort="low",
     )
     raw_reply = response.choices[0].message.content
+    # print("DEBUG raw_reply:", repr(raw_reply))                          # temporary
+    # print("DEBUG finish_reason:", response.choices[0].finish_reason)    # temporary
     reply_text = raw_reply.strip() if raw_reply else ""
 
     return {
@@ -64,11 +67,12 @@ def generate_reply(message: str,index:dict)->dict:
         "grounding_similarities":[ex["similarity"] for ex in grounded_examples]
     }
 
-if __name__=="__main__":
+if __name__ == "__main__":
+    import pandas as pd
     index = load_index()
-    test_message = "my phone screen went completely black and won't respond to anything"
-    result = generate_reply(test_message,index)
-    print(f"Message: {test_message}")
-    print(f"Grounded on {result['num_grounded_examples']} historical examples"
-          f"(similarities: {result['grounding_similarities']})")
-    print(f"Generated reply: {result['reply']}")
+    df = pd.read_csv("data/golden_eval_with_replies.csv")
+
+    for msg in df["text_customer"].head(3):
+        result = generate_reply(str(msg), index)
+        print(f"Message: {msg}")
+        print(f"Reply: {result['reply']!r}\n")
