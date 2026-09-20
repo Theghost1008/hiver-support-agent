@@ -500,3 +500,54 @@ on disk (golden_eval_with_judge.csv vs _v2.csv) for full traceability.
 rate remains low in absolute terms. The largest identified remaining cause
 (lost conversational thread context) was not addressed - noted as the
 primary "what I'd do with one more week" item.
+
+---
+
+### 27. Escalation policy improved with severity/tone signals, validated on golden set
+**Trigger:** Initial escalation policy evaluation showed 53.25% recall on true
+escalations (missing nearly half of messages that genuinely needed human
+review). Manual review of 36 false negatives revealed a consistent pattern:
+safety-critical situations (device catching fire), severe impact (total data
+loss), hostile/frustrated tone (profanity, ALL CAPS), and prior failed
+troubleshooting attempts — none captured by the original intent-based rules,
+regardless of how strong retrieval grounding was.
+
+**This directly revisits a decision made at escalation policy design time**
+(decision log #14) to defer sentiment/frustration detection as "plausible but
+unvalidated." That deferral was appropriate given no evidence at the time;
+this evaluation now provides concrete evidence, justifying revisiting it.
+
+**Added:** four new regex/keyword-based checks (safety-critical language,
+severe-impact language, hostile tone via profanity/caps-ratio, prior-failed-
+attempt phrases), checked before intent-based rules so severity can override
+an otherwise-fine intent category.
+
+**Result:** Recall 53.25% -> 64.94%, precision 58.57% -> 60.98% (both
+improved), overall accuracy 62.86% -> 66.29%.
+
+**Disclosed limitation:** these are simple keyword/regex heuristics, not
+robust sentiment analysis. Real false positives expected (e.g. non-literal
+use of "fire" or "burn") and false negatives (frustration without profanity/
+caps) remain likely. Not presented as a solved problem, just a validated
+improvement over the prior state.
+
+---
+
+### 29. End-to-end pipeline wired and verified
+**Decision:** src/pipeline.py provides process_message(), the single
+function representing the real production flow: classify intent ->
+retrieve grounding -> generate reply -> decide escalation.
+
+**Verified on 3 test messages**, including the fire-safety example, which
+correctly triggered the newly-added safety-critical escalation rule
+(decision log #28) end-to-end — direct confirmation the fix works not just
+in isolated testing but through the full real pipeline path.
+
+**Known minor inefficiency (disclosed, not fixed):** retrieve_similar is
+called twice per message (once directly in process_message for escalation's
+grounded_examples, once again inside generate_reply). Noted as a "what I'd
+do with one more week" optimization - thread the retrieval result through
+once rather than compute it twice - not fixed now given limited marginal
+value versus time cost.
+
+---
