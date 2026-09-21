@@ -1,4 +1,4 @@
-# AppleSupport - AI Support Agent
+# Hiver AppleSupport - AI Support Agent
 
 ## What this is
 
