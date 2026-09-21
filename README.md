@@ -1,4 +1,4 @@
-# AI Support Agent for AppleSupport
+# AppleSupport - AI Support Agent
 
 ## What this is
 
