@@ -9,3 +9,6 @@ httpx==0.27.2
 langdetect==1.0.9
 tqdm==4.70.0
 scikit-learn==1.9.0
+fastapi==0.141.1
+streamlit==1.64.0
+uvicorn==0.53.0

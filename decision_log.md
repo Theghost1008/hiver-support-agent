@@ -551,3 +551,25 @@ once rather than compute it twice - not fixed now given limited marginal
 value versus time cost.
 
 ---
+
+### 30. Deployed pipeline as a Streamlit demo and a FastAPI gateway (portfolio scope, not assignment-required)
+**Decision:** Built two deployable interfaces around the existing
+process_message() pipeline: a Streamlit UI for visual demonstration, and
+a FastAPI service (/health, /process) with simple shared-secret API key
+authentication, for a portfolio-facing live deployment.
+
+**Reasoning:**
+- Explicitly out of scope for the assignment itself (which asked for a
+  repo + report, not a hosted demo) - built as bonus portfolio work, kept
+  separate from the core evaluation deliverables.
+- API key check added deliberately, not as speculative complexity: a
+  public endpoint calling Groq without protection would risk real quota
+  exhaustion from unauthenticated traffic - the project has already hit
+  Groq's daily token cap multiple times during private development, making
+  this a concrete, evidenced risk rather than a hypothetical one.
+- Both interfaces reuse the identical process_message() function - no
+  duplicated pipeline logic between CLI, Streamlit, and API, keeping a
+  single source of truth for the actual system behavior.
+- Verified: successful authenticated request returns correct, consistent
+  output matching CLI/Streamlit results; unauthenticated request correctly
+  rejected with 401.
