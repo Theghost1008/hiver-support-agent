@@ -573,3 +573,34 @@ authentication, for a portfolio-facing live deployment.
 - Verified: successful authenticated request returns correct, consistent
   output matching CLI/Streamlit results; unauthenticated request correctly
   rejected with 401.
+
+---
+
+### 31. Added per-API-key rate limiting to the FastAPI gateway
+**Decision:** Added slowapi-based rate limiting (8 requests/minute) on the
+/process endpoint, keyed by API key rather than by IP address.
+
+**Reasoning:**
+- API key authentication alone stops unauthenticated strangers, but does
+  nothing to prevent a legitimate (or accidentally looping) caller from
+  rapidly exhausting Groq's per-minute or daily quota - a risk already
+  directly experienced multiple times during development.
+- Keyed by API key rather than IP: IP-based limiting is the common default,
+  but is the wrong unit here given deployment behind proxies/load balancers
+  can obscure or share IPs across genuinely different callers; the API key
+  is the actual accountable identity in this system.
+- 8/minute chosen deliberately conservative: each /process call makes 2
+  real Groq calls internally (classify_intent + generate_reply), and
+  Groq's free tier caps at 30 requests/minute - 8/minute leaves real
+  margin for the classifier/generator's own internal retry-on-rate-limit
+  logic without the rate limiter and retry logic fighting each other.
+
+**Fixed along the way:** a Pylance type warning on add_exception_handler
+was a known slowapi/FastAPI type-stub mismatch (not a real runtime risk),
+suppressed with a targeted type: ignore comment rather than worked around
+structurally - distinguished from earlier warnings that reflected genuine
+possible runtime states.
+
+**Verified:** 9 rapid requests to /process resulted in the first 8
+succeeding and the 9th returning 429, confirming the limiter is
+enforced correctly per key.
