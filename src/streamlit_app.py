@@ -1,8 +1,23 @@
 import streamlit as st
 from src.pipeline import process_message
+import os
 
 st.set_page_config(page_title="AppleSupport AI Agent",page_icon="🍎")
 st.title("AppleSupport AI Agent - Demo")
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    password = st.text_input("Enter access password", type="password" )
+    if password:
+        if password == os.environ.get("STREAMLIT_DEMO_PASSWORD"):
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("Incorrect password")
+    st.stop()
+
 st.write("Type a customer support message to see the full pipeline in action")
 
 message = st.text_area("Customer message", placeholder="e.g. my phone screen went blank and won't respond")

@@ -1,0 +1,17 @@
+.hiver/
+.venv/
+venv/
+data/raw/
+data/golden_eval*.csv
+data/judge_agreement*.csv
+data/processed/apple_pairs.csv
+data/processed/apple_pairs_with_predictions.csv
+data/processed/presample_with_predictions.csv
+data/processed/twcs_subsample.csv
+notebooks/
+.git/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+tp*.py
