@@ -7,7 +7,7 @@ services:
       - .env
   streamlit:
     build: .
-    command: streamlit run streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+    command: python -m streamlit run src/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
     ports:
       - "8051:8501"
     env_file:
